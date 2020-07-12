@@ -20,6 +20,7 @@ const upload = multer({
 const Book = require('../models/book')
 
 router.get('', async (req, res) => {
+    // console.log('helloooooo')
     try {
         const books = await Book.find({})
 
@@ -35,7 +36,7 @@ router.get('', async (req, res) => {
     }
 })
 
-router.get('/:id?', async (req, res) => {
+router.get('/:id', async (req, res) => {
     try {
         const book = await Book.findOne({ _id: req.params.id })
 
@@ -55,6 +56,7 @@ router.post('', upload.single('image'), (req, res) => {
         cloudinary.uploader.upload(req.file.path, { use_filename: true }, async (error, result) => {
 
             if (error) {
+                // console.log('got an error')
                 return res.status(500).send({ error: error })
             }
 
@@ -62,7 +64,9 @@ router.post('', upload.single('image'), (req, res) => {
             book.image = result.secure_url
             book.url = result.secure_url
             book.cloudinary.public_id = result.public_id
+            // console.log('before saving to database')
             book.save().then(doc => {
+                // console.log('created book succesfully')
                 return res.status(201).send(book)
             }).catch(e => {
                 // when something happend to save that book to database
@@ -74,7 +78,7 @@ router.post('', upload.single('image'), (req, res) => {
     }
 })
 
-router.patch('/:id?', async (req, res) => {
+router.patch('/:id', async (req, res) => {
     try {
         if (!req.params.id) {
             return res.status(400).send({ error: 'Bad Request' })
@@ -93,7 +97,7 @@ router.patch('/:id?', async (req, res) => {
     }
 })
 
-router.delete('/:id?', async (req, res) => {
+router.delete('/:id', async (req, res) => {
     try {
         const book = await Book.findOne({
             _id: req.params.id
@@ -103,21 +107,26 @@ router.delete('/:id?', async (req, res) => {
             return res.status(404).send({ error: 'book with id cannot be deleted' })
         }
 
+        // console.log(book)
+
         // book available so try to delete it from cloudinary image and book in database
         cloudinary.uploader.destroy(book.cloudinary.public_id, (error, result) => {
             if (error) {
-                console.log(error)
+                // console.log(error)
                 return res.status(500).send({ error: error })
             }
 
             book.remove().then(data => {
-                console.log(data)
+                // console.log('REMOVED DOCUMENT')
+                // console.log(data)
             }).catch(e => {
+                // console.log('Error removing docu')
                 return res.status(500).send({ error: e })
             })
+
+            return res.send(book)
         })
 
-        return res.send(book)
     } catch (e) {
         res.status(500).send({ error: e })
     }

@@ -22,7 +22,7 @@ app.use(bodyParser.json()) // access payload in req.body <- new property by body
 app.use(bodyParser.urlencoded({ extended: true })) // not exactly sure what this does
 
 // define routes
-app.use('/api/books', books)
+app.use('/api/books/', books)
 
 app.listen(port, () => {
     console.log(`Server listen on port ${port}`)
